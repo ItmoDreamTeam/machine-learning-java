@@ -11,7 +11,7 @@ public class MinkowskiKnnDistMeter implements KnnDistMeter {
 
     @Override
     public double dist(Vector from, Vector to) {
-        return Math.pow(from.minus(to).power(power).sum(), 1.0 / power);
+        return Math.pow(from.minus(to).abs().power(power).sum(), 1.0 / power);
     }
 
     @Override

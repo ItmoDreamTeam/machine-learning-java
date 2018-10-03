@@ -1,8 +1,6 @@
 package com.github.itmodreamteam.ml.labs.lab1;
 
-import com.github.itmodreamteam.ml.labs.lab1.knn.KnnClassifier;
-import com.github.itmodreamteam.ml.labs.lab1.knn.KnnDistMeter;
-import com.github.itmodreamteam.ml.labs.lab1.knn.Knns;
+import com.github.itmodreamteam.ml.labs.lab1.knn.*;
 import com.github.itmodreamteam.ml.metric.Metric;
 import com.github.itmodreamteam.ml.utils.collections.IntList;
 import com.github.itmodreamteam.ml.utils.collections.Lists;
@@ -40,6 +38,7 @@ public class Lab1 {
         int bestNumberOfNeighbor = 0;
         int bestNumberOfBatches = 0;
         KnnDistMeter bestMeter = null;
+        KnnImportanceFunction bestImportanceFunction = null;
 
         List<KnnDistMeter> meters = new ArrayList<>();
         meters.add(KnnDistMeter.euclidian());
@@ -49,26 +48,29 @@ public class Lab1 {
         Matrix features = Matrixes.dense(csv.doubles("X", "Y"));
         IntList classes = Lists.of(csv.ints("Class"));
 
-        for (int numberOfNeighbor = 1; numberOfNeighbor < 10; ++numberOfNeighbor) {
+        for (int numberOfNeighbors = 2; numberOfNeighbors < 10; ++numberOfNeighbors) {
             for (int numberOfBatches = 3; numberOfBatches < 6; ++numberOfBatches) {
                 for (KnnDistMeter meter : meters) {
-                    ClassifierCrossValidator validator = ClassifierCrossValidator.of(
-                            Knns.of(numberOfNeighbor, meter), features, classes
-                    );
+                    for (KnnImportanceFunction importanceFunction : KnnImportanceFunctions.values()) {
+                        ClassifierCrossValidator validator = ClassifierCrossValidator.of(
+                                Knns.of(numberOfNeighbors, meter, importanceFunction, 2), features, classes
+                        );
 
-                    Metric metric = validator.validate(numberOfBatches);
-                    LOG.debug("neighbor: {}, batches: {}, meter: {}, f1mesure(0): {}", numberOfNeighbor, numberOfBatches, meter, metric.f1measure(0));
-                    LOG.debug("neighbor: {}, batches: {}, meter: {}, f1mesure(1): {}", numberOfNeighbor, numberOfBatches, meter, metric.f1measure(1));
-                    if (metric.f1measure(1) > bestF1Measure) {
-                        bestF1Measure = metric.f1measure(1);
-                        bestNumberOfBatches = numberOfBatches;
-                        bestNumberOfNeighbor = numberOfNeighbor;
-                        bestMeter = meter;
+                        Metric metric = validator.validate(numberOfBatches);
+                        LOG.debug("neighbor: {}, batches: {}, meter: {}, kernel: {}, f1mesure(0): {}", numberOfNeighbors, numberOfBatches, meter, importanceFunction, metric.f1measure(0));
+                        LOG.debug("neighbor: {}, batches: {}, meter: {}, kernel: {}, f1mesure(1): {}", numberOfNeighbors, numberOfBatches, meter, importanceFunction, metric.f1measure(1));
+                        if (metric.f1measure(1) > bestF1Measure) {
+                            bestF1Measure = metric.f1measure(1);
+                            bestNumberOfBatches = numberOfBatches;
+                            bestNumberOfNeighbor = numberOfNeighbors;
+                            bestMeter = meter;
+                            bestImportanceFunction = importanceFunction;
+                        }
                     }
                 }
             }
         }
-        LOG.info("best f1 measure: {}, neighbor: {}, batches: {}, meter: {}", bestF1Measure, bestNumberOfNeighbor, bestNumberOfBatches, bestMeter);
+        LOG.info("best f1 measure: {}, neighbor: {}, batches: {}, meter: {}, kernel: {}", bestF1Measure, bestNumberOfNeighbor, bestNumberOfBatches, bestMeter, bestImportanceFunction);
     }
 
     public static void main(final String... args) throws Exception {

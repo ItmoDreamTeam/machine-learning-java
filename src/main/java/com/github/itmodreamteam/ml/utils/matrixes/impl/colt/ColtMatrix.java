@@ -1,6 +1,7 @@
 package com.github.itmodreamteam.ml.utils.matrixes.impl.colt;
 
 import cern.colt.matrix.DoubleMatrix2D;
+import cern.colt.matrix.doublealgo.Statistic;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import com.github.itmodreamteam.ml.utils.matrixes.*;
 

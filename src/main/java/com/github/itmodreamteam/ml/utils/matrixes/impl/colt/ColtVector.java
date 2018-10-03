@@ -90,6 +90,11 @@ public class ColtVector implements Vector {
     }
 
     @Override
+    public Vector abs() {
+        return new ColtVector(colt.copy().assign(Operation.ABS::apply));
+    }
+
+    @Override
     public Vector enrich(EnrichFunction... functions) {
         DoubleArrayList list = new DoubleArrayList();
         double[] source = colt.toArray();

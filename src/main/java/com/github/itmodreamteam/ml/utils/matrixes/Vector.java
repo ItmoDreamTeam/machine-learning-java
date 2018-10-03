@@ -29,6 +29,8 @@ public interface Vector {
 
     double mean();
 
+    Vector abs();
+
     Vector enrich(EnrichFunction... func);
 
     Matrix covariance(Vector that);
