@@ -34,7 +34,7 @@ public class Lab1 {
     }
 
     public void run() {
-        double bestF1Measure = 0.0;
+        Metric bestMetric = null;
         int bestNumberOfNeighbor = 0;
         int bestNumberOfBatches = 0;
         KnnDistMeter bestMeter = null;
@@ -55,10 +55,14 @@ public class Lab1 {
         transformers.add(DimensionTransformer.CARTESIAN_TO_POLAR);
 
         for (DimensionTransformer transformer : transformers) {
+            LOG.info("transformer: {}", transformer);
             Matrix transformedFeatures = transformer.transform(features);
-            for (int numberOfNeighbors = 2; numberOfNeighbors < 10; ++numberOfNeighbors) {
-                for (int numberOfBatches = 3; numberOfBatches < 6; ++numberOfBatches) {
+            for (int numberOfNeighbors = 2; numberOfNeighbors < 15; ++numberOfNeighbors) {
+                LOG.info("number of neighbors: {}", numberOfNeighbors);
+                for (int numberOfBatches = 3; numberOfBatches < 12; ++numberOfBatches) {
+                    LOG.debug("number of batches: {}", numberOfBatches);
                     for (KnnDistMeter meter : meters) {
+                        LOG.debug("meter: {}", meter);
                         for (KnnImportanceFunction importanceFunction : KnnImportanceFunctions.values()) {
                             ClassifierCrossValidator validator = ClassifierCrossValidator.of(
                                     Knns.of(numberOfNeighbors, meter, importanceFunction, 2), transformedFeatures, classes
@@ -79,8 +83,8 @@ public class Lab1 {
                                     importanceFunction,
                                     transformer,
                                     metric.f1measure(1));
-                            if (metric.f1measure(1) > bestF1Measure) {
-                                bestF1Measure = metric.f1measure(1);
+                            if (bestMetric == null || metric.f1measure(1) > bestMetric.f1measure(1)) {
+                                bestMetric = metric;
                                 bestNumberOfBatches = numberOfBatches;
                                 bestNumberOfNeighbor = numberOfNeighbors;
                                 bestMeter = meter;
@@ -92,13 +96,20 @@ public class Lab1 {
                 }
             }
         }
-        LOG.info("best f1 measure: {}, neighbor: {}, batches: {}, meter: {}, kernel: {}, transformer: {}",
-                bestF1Measure,
+        LOG.info("best: neighbor: {}, batches: {}, meter: {}, kernel: {}, transformer: {}",
                 bestNumberOfNeighbor,
                 bestNumberOfBatches,
                 bestMeter,
                 bestImportanceFunction,
                 bestTransformer);
+        LOG.info("f1 measure(1): {}", bestMetric.f1measure(1));
+        LOG.info("f1 measure(0): {}", bestMetric.f1measure(0));
+        LOG.info("recall(1): {}", bestMetric.recall(1));
+        LOG.info("recall(0): {}", bestMetric.recall(0));
+        LOG.info("precision(1): {}", bestMetric.precision(1));
+        LOG.info("precision(0): {}", bestMetric.precision(0));
+        LOG.info("accuracy(1): {}", bestMetric.accuracy(1));
+        LOG.info("accuracy(0): {}", bestMetric.accuracy(0));
     }
 
     public static void main(final String... args) throws Exception {

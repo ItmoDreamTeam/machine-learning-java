@@ -18,9 +18,20 @@ public class Metric {
             int totalPredicted = Arrays.stream(builder.stat[classLabel]).sum();
             // truePositive + falseNegative
             int totalLabeled = Arrays.stream(column(builder.stat, builder.numberOfClasses, classLabel)).sum();
+            int totalCorrect = 0;
+            int total = 0;
+            for (int i = 0; i < builder.stat.length; ++i) {
+                for (int j = 0; j < builder.stat[i].length; ++j) {
+                    if (i == j) {
+                        totalCorrect += builder.stat[i][j];
+                    }
+                    total += builder.stat[i][j];
+                }
+            }
             double precision = 1.0 * truePositive / totalPredicted;
             double recall = 1.0 * truePositive / totalLabeled;
-            Stats stats = new Stats(precision, recall);
+            double accuracy = 1.0 * totalCorrect / total;
+            Stats stats = new Stats(precision, recall, accuracy);
             this.stats[classLabel] = stats;
         }
     }
@@ -56,6 +67,10 @@ public class Metric {
         return (beta * beta + 1) * (precision * recall) / (beta * beta * precision + recall);
     }
 
+    public double accuracy(int label) {
+        return stats[label].accuracy;
+    }
+
     @Override
     public String toString() {
         return Arrays.toString(stats);
@@ -70,16 +85,19 @@ public class Metric {
         for (int label = 0; label < numberOfClasses; ++label) {
             double totalPrecision = 0;
             double totalRecall = 0;
+            double totalAccuracy = 0;
 
             for (Metric metric : metrics) {
                 Stats stat = metric.stats[label];
                 totalPrecision += stat.precision;
                 totalRecall += stat.recall;
+                totalAccuracy += stat.accuracy;
             }
 
             double avgPrecision = totalPrecision / metrics.size();
             double avgRecall = totalRecall / metrics.size();
-            avgMetrics[label] = new Stats(avgPrecision, avgRecall);
+            double avgAccuracy = totalAccuracy / metrics.size();
+            avgMetrics[label] = new Stats(avgPrecision, avgRecall, avgAccuracy);
         }
         return new Metric(avgMetrics);
     }
@@ -87,10 +105,12 @@ public class Metric {
     private static class Stats {
         private final double precision;
         private final double recall;
+        private final double accuracy;
 
-        Stats(double precision, double recall) {
+        Stats(double precision, double recall, double accuracy) {
             this.precision = precision;
             this.recall = recall;
+            this.accuracy = accuracy;
         }
 
         @Override
@@ -98,6 +118,7 @@ public class Metric {
             return "Stats{" +
                     "precision=" + precision +
                     ", recall=" + recall +
+                    ", accuracy=" + accuracy +
                     '}';
         }
     }
