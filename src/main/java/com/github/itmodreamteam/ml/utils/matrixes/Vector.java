@@ -15,6 +15,8 @@ public interface Vector {
 
     Vector multAsRow(Matrix that);
 
+    Vector devide(Vector denominator);
+
     Vector plus(Vector that);
 
     Vector minus(Vector that);

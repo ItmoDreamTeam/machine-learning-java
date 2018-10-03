@@ -8,21 +8,21 @@ public class Knns implements ClassifierFactory {
     private final int numberOfNeighbor;
     private final KnnDistMeter core;
     private final KnnImportanceFunction importanceFunction;
-    private final int numberOfLabels;
+    private final int numberOfClasses;
 
-    private Knns(int numberOfNeighbor, KnnDistMeter core, KnnImportanceFunction importanceFunction, int numberOfLabels) {
+    private Knns(int numberOfNeighbor, KnnDistMeter core, KnnImportanceFunction importanceFunction, int numberOfClasses) {
         this.numberOfNeighbor = numberOfNeighbor;
         this.core = core;
         this.importanceFunction = importanceFunction;
-        this.numberOfLabels = numberOfLabels;
+        this.numberOfClasses = numberOfClasses;
     }
 
-    public static Knns of(int numberOfNeighbor, KnnDistMeter core, KnnImportanceFunction importanceFunction, int numberOfLabels) {
-        return new Knns(numberOfNeighbor, core, importanceFunction, numberOfLabels);
+    public static Knns of(int numberOfNeighbor, KnnDistMeter core, KnnImportanceFunction importanceFunction, int numberOfClasses) {
+        return new Knns(numberOfNeighbor, core, importanceFunction, numberOfClasses);
     }
 
     @Override
     public KnnClassifier build(Matrix trainFeatures, IntList trainClasses) {
-        return new KnnClassifier(numberOfNeighbor, core, importanceFunction, trainFeatures, trainClasses, numberOfLabels);
+        return new KnnClassifier(numberOfNeighbor, core, importanceFunction, trainFeatures, trainClasses, numberOfClasses);
     }
 }

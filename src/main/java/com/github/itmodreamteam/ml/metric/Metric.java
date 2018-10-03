@@ -65,9 +65,9 @@ public class Metric {
         if (metrics == null || metrics.size() == 0) {
             throw new IllegalArgumentException("metrics cannot be null or empty to compute average metric");
         }
-        int numberOfLabels = metrics.get(0).stats.length;
-        Stats[] avgMetrics = new Stats[numberOfLabels];
-        for (int label = 0; label < numberOfLabels; ++label) {
+        int numberOfClasses = metrics.get(0).stats.length;
+        Stats[] avgMetrics = new Stats[numberOfClasses];
+        for (int label = 0; label < numberOfClasses; ++label) {
             double totalPrecision = 0;
             double totalRecall = 0;
 

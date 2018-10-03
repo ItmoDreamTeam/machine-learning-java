@@ -17,49 +17,47 @@ public class KnnClassifier implements Classifier {
     private final KnnImportanceFunction importanceFunction;
     private final Matrix train;
     private final IntList classes;
-    private final int numberOfClassLabels;
+    private final int numberOfClasses;
 
-    public KnnClassifier(int numberOfNeighbors, KnnDistMeter meter, KnnImportanceFunction importanceFunction, Matrix train, IntList classes, int numberOfClassLabels) {
+    public KnnClassifier(int numberOfNeighbors, KnnDistMeter meter, KnnImportanceFunction importanceFunction, Matrix train, IntList classes, int numberOfClasses) {
         this.numberOfNeighbors = numberOfNeighbors;
         this.meter = meter;
         this.importanceFunction = importanceFunction;
         this.train = train;
         this.classes = classes;
-        this.numberOfClassLabels = numberOfClassLabels;
+        this.numberOfClasses = numberOfClasses;
     }
 
     @Override
     public int classify(Vector val) {
-        List<Stat> nearestNeighbors = IntStream.range(0, train.rows())
-                .mapToObj(i -> new Stat(meter.dist(train.row(i), val), classes.get(i)))
-                .sorted(Comparator.comparingDouble(Stat::getDist))
+        List<Neighbor> nearestNeighbors = IntStream.range(0, train.rows())
+                .mapToObj(i -> new Neighbor(meter.dist(train.row(i), val), classes.get(i)))
+                .sorted(Comparator.comparingDouble(Neighbor::getDist))
                 .limit(numberOfNeighbors)
                 .collect(toList());
-        double maxDist = nearestNeighbors.stream().mapToDouble(Stat::getDist).max().getAsDouble();
-        for (int i = 0; i < numberOfNeighbors; i++) {
-            Stat stat = nearestNeighbors.get(i);
-            Stat normalizedStat = new Stat(stat.getDist() / maxDist, stat.getLabel());
-            nearestNeighbors.set(i, normalizedStat);
-        }
-        double[] classWeight = new double[numberOfClassLabels];
-        for (int serialNumberOfNeighbor = 1; serialNumberOfNeighbor <= nearestNeighbors.size(); ++serialNumberOfNeighbor) {
-            double importance = importanceFunction.importance(nearestNeighbors.get(serialNumberOfNeighbor - 1).dist);
-            classWeight[nearestNeighbors.get(serialNumberOfNeighbor - 1).label] += importance;
+        double maxDist = nearestNeighbors.stream().mapToDouble(Neighbor::getDist).max().getAsDouble();
+        List<Neighbor> normalizedNearestNeighbors = nearestNeighbors.stream()
+                .map(neighbor -> new Neighbor(neighbor.getDist() / maxDist, neighbor.getLabel()))
+                .collect(toList());
+        double[] classImportance = new double[numberOfClasses];
+        for (Neighbor neighbor : normalizedNearestNeighbors) {
+            double importance = importanceFunction.importance(neighbor.dist);
+            classImportance[neighbor.label] += importance;
         }
         int maxClassWeightLabel = 0;
-        for (int i = 0; i < classWeight.length; ++i) {
-            if (classWeight[i] > classWeight[maxClassWeightLabel]) {
+        for (int i = 0; i < classImportance.length; ++i) {
+            if (classImportance[i] > classImportance[maxClassWeightLabel]) {
                 maxClassWeightLabel = i;
             }
         }
         return maxClassWeightLabel;
     }
 
-    private static class Stat {
+    private static class Neighbor {
         private final double dist;
         private final int label;
 
-        Stat(double dist, int label) {
+        Neighbor(double dist, int label) {
             this.dist = dist;
             this.label = label;
         }

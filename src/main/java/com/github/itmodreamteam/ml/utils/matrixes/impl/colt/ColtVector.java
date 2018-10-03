@@ -55,6 +55,11 @@ public class ColtVector implements Vector {
     }
 
     @Override
+    public Vector devide(Vector denominator) {
+        return assign(denominator, BiOperation.DIVIDE);
+    }
+
+    @Override
     public Vector plus(Vector that) {
         return assign(that, BiOperation.SUM);
     }

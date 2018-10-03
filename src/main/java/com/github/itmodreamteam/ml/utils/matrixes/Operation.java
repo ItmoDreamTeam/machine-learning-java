@@ -10,6 +10,8 @@ public interface Operation {
 
     Operation ABS = source -> source < 0 ? -source : source;
 
+    Operation ATAN = Math::atan;
+
     double apply(double source);
 
     default Operation andThen(Operation after) {

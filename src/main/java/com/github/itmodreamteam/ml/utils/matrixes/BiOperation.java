@@ -6,6 +6,7 @@ public interface BiOperation {
     BiOperation SUM = (f, s) -> f + s;
     BiOperation DIFF = (f, s) -> f - s;
     BiOperation MULT = (f, s) -> f * s;
+    BiOperation DIVIDE = (f, s) -> f / s;
 
     double apply(double first, double second);
 
