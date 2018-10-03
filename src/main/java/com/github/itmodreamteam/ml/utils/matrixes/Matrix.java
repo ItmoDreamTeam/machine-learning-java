@@ -27,6 +27,18 @@ public interface Matrix {
 
     Matrix inverse();
 
+    default Matrix slice(int startRow, int endRow, boolean cols) {
+        return slice(row -> row >= startRow && row < endRow, col -> true);
+    }
+
+    default Matrix slice(boolean rows, int startCol, int endCol) {
+        return slice(rows, col -> col >= startCol && col < endCol);
+    }
+
+    default Matrix slice(int startRow, int endRow, int startCol, int endCol) {
+        return slice(row -> row >= startRow && row < endRow, col -> col >= startCol && col < endCol);
+    }
+
     default Matrix slice(IntPredicate rows, boolean cols) {
         return slice(rows, colNumber -> cols);
     }
