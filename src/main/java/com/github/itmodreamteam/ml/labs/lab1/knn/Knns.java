@@ -6,18 +6,18 @@ import com.github.itmodreamteam.ml.classification.ClassifierFactory;
 
 public class Knns implements ClassifierFactory {
     private final int numberOfNeighbors;
-    private final KnnDistMeter meter;
+    private final KnnClosestFunction meter;
     private final KnnImportanceFunction importanceFunction;
     private final int numberOfClasses;
 
-    private Knns(int numberOfNeighbors, KnnDistMeter meter, KnnImportanceFunction importanceFunction, int numberOfClasses) {
+    private Knns(int numberOfNeighbors, KnnClosestFunction meter, KnnImportanceFunction importanceFunction, int numberOfClasses) {
         this.numberOfNeighbors = numberOfNeighbors;
         this.meter = meter;
         this.importanceFunction = importanceFunction;
         this.numberOfClasses = numberOfClasses;
     }
 
-    public static Knns of(int numberOfNeighbors, KnnDistMeter meter, KnnImportanceFunction importanceFunction, int numberOfClasses) {
+    public static Knns of(int numberOfNeighbors, KnnClosestFunction meter, KnnImportanceFunction importanceFunction, int numberOfClasses) {
         return new Knns(numberOfNeighbors, meter, importanceFunction, numberOfClasses);
     }
 

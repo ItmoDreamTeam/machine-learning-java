@@ -3,7 +3,7 @@ package com.github.itmodreamteam.ml.labs.lab1.knn;
 import com.github.itmodreamteam.ml.utils.matrixes.Operation;
 import com.github.itmodreamteam.ml.utils.matrixes.Vector;
 
-public class CosSimilarityKnnDistMeter implements KnnDistMeter {
+public class CosSimilarityClosestFunction implements KnnClosestFunction {
     @Override
     public double dist(Vector from, Vector to) {
         double d1 = from.assign(to, (f, t) -> f * t).sum();

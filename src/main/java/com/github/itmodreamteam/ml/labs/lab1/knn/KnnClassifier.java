@@ -13,13 +13,13 @@ import static java.util.stream.Collectors.toList;
 
 public class KnnClassifier implements Classifier {
     private final int numberOfNeighbors;
-    private final KnnDistMeter meter;
+    private final KnnClosestFunction meter;
     private final KnnImportanceFunction importanceFunction;
     private final Matrix train;
     private final IntList classes;
     private final int numberOfClasses;
 
-    public KnnClassifier(int numberOfNeighbors, KnnDistMeter meter, KnnImportanceFunction importanceFunction, Matrix train, IntList classes, int numberOfClasses) {
+    public KnnClassifier(int numberOfNeighbors, KnnClosestFunction meter, KnnImportanceFunction importanceFunction, Matrix train, IntList classes, int numberOfClasses) {
         this.numberOfNeighbors = numberOfNeighbors;
         this.meter = meter;
         this.importanceFunction = importanceFunction;

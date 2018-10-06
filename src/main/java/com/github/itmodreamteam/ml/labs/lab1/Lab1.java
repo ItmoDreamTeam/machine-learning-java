@@ -38,15 +38,15 @@ public class Lab1 {
         Metric bestMetric = null;
         int bestNumberOfNeighbors = 0;
         int bestNumberOfBatches = 0;
-        KnnDistMeter bestMeter = null;
+        KnnClosestFunction bestMeter = null;
         KnnImportanceFunction bestImportanceFunction = null;
         DimensionTransformer bestTransformer = null;
 
-        List<KnnDistMeter> meters = new ArrayList<>();
-        meters.add(KnnDistMeter.euclidian());
-        meters.add(KnnDistMeter.manhattan());
-        meters.add(KnnDistMeter.mahalanobis());
-        meters.add(KnnDistMeter.cosSimilarity());
+        List<KnnClosestFunction> meters = new ArrayList<>();
+        meters.add(KnnClosestFunction.euclidian());
+        meters.add(KnnClosestFunction.manhattan());
+        meters.add(KnnClosestFunction.mahalanobis());
+        meters.add(KnnClosestFunction.cosSimilarity());
 
         Matrix features = Matrixes.dense(csv.doubles("X", "Y"));
         IntList classes = Lists.of(csv.ints("Class"));
@@ -58,15 +58,17 @@ public class Lab1 {
         for (DimensionTransformer transformer : transformers) {
             LOG.info("transformer: {}", transformer);
             Matrix transformedFeatures = transformer.transform(features);
-            for (int numberOfNeighbors = 2; numberOfNeighbors < 15; ++numberOfNeighbors) {
+            for (int numberOfNeighbors = 2; numberOfNeighbors < 12; ++numberOfNeighbors) {
                 LOG.info("number of neighbors: {}", numberOfNeighbors);
-                for (int numberOfBatches = 3; numberOfBatches < 12; ++numberOfBatches) {
+                for (int numberOfBatches = 3; numberOfBatches < 8; ++numberOfBatches) {
                     LOG.debug("number of batches: {}", numberOfBatches);
-                    for (KnnDistMeter meter : meters) {
+                    for (KnnClosestFunction meter : meters) {
                         LOG.debug("meter: {}", meter);
                         for (KnnImportanceFunction importanceFunction : KnnImportanceFunctions.values()) {
                             ClassifierCrossValidator validator = ClassifierCrossValidator.of(
-                                    Knns.of(numberOfNeighbors, meter, importanceFunction, 2), transformedFeatures, classes
+                                    Knns.of(numberOfNeighbors, meter, importanceFunction, 2),
+                                    transformedFeatures,
+                                    classes
                             );
 
                             Metric metric = validator.validate(numberOfBatches);
@@ -103,8 +105,6 @@ public class Lab1 {
                 bestMeter,
                 bestImportanceFunction,
                 bestTransformer);
-        Knns knns = Knns.of(bestNumberOfNeighbors, bestMeter, bestImportanceFunction, 2);
-        visualizeKnn(features, classes, knns, 0.8);
 
         LOG.info("f1 measure(1): {}", bestMetric.f1measure(1));
         LOG.info("f1 measure(0): {}", bestMetric.f1measure(0));
@@ -114,6 +114,9 @@ public class Lab1 {
         LOG.info("precision(0): {}", bestMetric.precision(0));
         LOG.info("accuracy(1): {}", bestMetric.accuracy(1));
         LOG.info("accuracy(0): {}", bestMetric.accuracy(0));
+
+        Knns knns = Knns.of(bestNumberOfNeighbors, bestMeter, bestImportanceFunction, 2);
+        visualizeKnn(features, classes, knns, 0.8);
     }
 
     // TODO refactor
@@ -152,7 +155,7 @@ public class Lab1 {
                     testZeroSuccess.add(chip);
                 }
             } else {
-                if (expected == 1) {
+                if (actual == 1) {
                     testOneFailed.add(chip);
                 } else {
                     testZeroFailed.add(chip);
@@ -185,23 +188,23 @@ public class Lab1 {
                         testOneSuccess.stream()
                                 .map(Chip::getY)
                                 .collect(toList()),
-                        "r+")
-                .add(
-                        testZeroSuccess.stream()
-                                .map(Chip::getX)
-                                .collect(toList()),
-                        testZeroSuccess.stream()
-                                .map(Chip::getY)
-                                .collect(toList()),
                         "b+")
                 .add(
+                        testZeroSuccess.stream()
+                                .map(Chip::getX)
+                                .collect(toList()),
+                        testZeroSuccess.stream()
+                                .map(Chip::getY)
+                                .collect(toList()),
+                        "r+")
+                .add(
                         testOneFailed.stream()
                                 .map(Chip::getX)
                                 .collect(toList()),
                         testOneFailed.stream()
                                 .map(Chip::getY)
                                 .collect(toList()),
-                        "rx")
+                        "bx")
                 .add(
                         testZeroFailed.stream()
                                 .map(Chip::getX)
@@ -209,7 +212,7 @@ public class Lab1 {
                         testZeroFailed.stream()
                                 .map(Chip::getY)
                                 .collect(toList()),
-                        "bx");
+                        "rx");
         plt.xlabel("x");
         plt.ylabel("y");
         plt.title("Chips");

@@ -2,7 +2,7 @@ package com.github.itmodreamteam.ml.labs.lab1.knn;
 
 import com.github.itmodreamteam.ml.utils.matrixes.Vector;
 
-public class MahalanobisKnnDistMeter implements KnnDistMeter {
+public class MahalanobisClosestFunction implements KnnClosestFunction {
     @Override
     public double dist(Vector from, Vector to) {
         Vector diff = from.minus(to);
