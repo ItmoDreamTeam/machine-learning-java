@@ -1,6 +1,7 @@
 package com.github.itmodreamteam.ml.regression;
 
 import com.github.itmodreamteam.ml.utils.matrixes.Matrix;
+import com.github.itmodreamteam.ml.utils.matrixes.Matrixes;
 import com.github.itmodreamteam.ml.utils.matrixes.Vector;
 import com.github.itmodreamteam.ml.utils.matrixes.Vectors;
 import org.slf4j.Logger;
@@ -21,8 +22,9 @@ public class GradientDescentLinearRegressionFactory implements LinearRegressionF
     public LinearRegression make(Matrix features, Vector expected) {
         int numberOfSamples = features.rows();
         int numberOfFeatures = features.cols();
-        Matrix extendedFeatures = features.forEachColumn(Vector::normalize)
-                .appendLeft(Vectors.ones(numberOfSamples));
+        Matrix extendedFeatures = Matrixes.joinColumns(
+                Vectors.ones(numberOfSamples),
+                features.forEachColumn(Vector::normalize));
         Vector featureWeights = Vectors.zeros(numberOfFeatures + 1);
         for (iteration = 0; iteration < numberOfIterations; ++iteration) {
             featureWeights = optimize(extendedFeatures, featureWeights, expected);

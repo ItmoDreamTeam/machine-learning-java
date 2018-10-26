@@ -1,11 +1,24 @@
 package com.github.itmodreamteam.ml.utils.matrixes;
 
-public interface Vector {
+import java.util.Collections;
+import java.util.List;
+
+public interface Vector extends ColumnsProvider, RowsProvider {
     int size();
 
     double get(int index);
 
     double[] toArray();
+
+    @Override
+    default List<Vector> getColumns() {
+        return Collections.singletonList(this);
+    }
+
+    @Override
+    default List<Vector> getRows() {
+        return Collections.singletonList(this);
+    }
 
     Vector assign(Vector that, BiOperation operation);
 

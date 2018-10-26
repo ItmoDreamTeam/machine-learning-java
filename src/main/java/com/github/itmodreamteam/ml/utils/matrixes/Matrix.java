@@ -3,7 +3,7 @@ package com.github.itmodreamteam.ml.utils.matrixes;
 import java.util.function.IntPredicate;
 import java.util.function.UnaryOperator;
 
-public interface Matrix {
+public interface Matrix extends ColumnsProvider, RowsProvider {
     int rows();
 
     int cols();
@@ -32,6 +32,8 @@ public interface Matrix {
 
     Matrix inverse();
 
+    Matrix transpose();
+
     default Matrix slice(int startRow, int endRow, boolean cols) {
         return slice(row -> row >= startRow && row < endRow, col -> true);
     }
@@ -51,8 +53,6 @@ public interface Matrix {
     default Matrix slice(boolean rows, IntPredicate cols) {
         return slice(rowNumber -> rows, cols);
     }
-
-    Matrix appendLeft(Vector vector);
 
     Matrix forEachColumn(UnaryOperator<Vector> column);
 }

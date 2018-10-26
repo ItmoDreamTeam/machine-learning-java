@@ -5,17 +5,17 @@ import com.github.itmodreamteam.ml.utils.matrixes.impl.colt.ColtVectorFactory;
 import java.util.stream.DoubleStream;
 
 public class Vectors {
-    private static final VectorFactory factory = new ColtVectorFactory();
+    private static final VectorFactory FACTORY = new ColtVectorFactory();
 
     public static Vector dense(double... elements) {
-        return factory.create(elements);
+        return FACTORY.create(elements);
     }
 
     public static Vector zeros(int size) {
-        return factory.create(new double[size]);
+        return FACTORY.create(new double[size]);
     }
 
     public static Vector ones(int size) {
-        return factory.create(DoubleStream.iterate(1.0, d -> d).limit(size).toArray());
+        return FACTORY.create(DoubleStream.iterate(1.0, d -> d).limit(size).toArray());
     }
 }

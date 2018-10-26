@@ -9,10 +9,10 @@ import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import com.github.itmodreamteam.ml.utils.matrixes.*;
 
-public class ColtVector implements Vector {
+class ColtVector implements Vector {
     final DoubleMatrix1D colt;
 
-    public ColtVector(DoubleMatrix1D colt) {
+    ColtVector(DoubleMatrix1D colt) {
         this.colt = colt;
     }
 
