@@ -33,6 +33,11 @@ class ColtMatrix extends AbstractMatrix {
     }
 
     @Override
+    public double get(int rowNumber, int columnNumber) {
+        return colt.get(rowNumber, columnNumber);
+    }
+
+    @Override
     public Vector row(int rowNumber) {
         return new ColtVector(colt.viewRow(rowNumber));
     }
@@ -70,8 +75,18 @@ class ColtMatrix extends AbstractMatrix {
     }
 
     @Override
+    public Matrix mult(Matrix that) {
+        return new ColtMatrix(Algebra.DEFAULT.mult(colt, ColtUtils.matrix(that)));
+    }
+
+    @Override
     public Vector multColumn(Vector that) {
         return new ColtVector(Algebra.DEFAULT.mult(colt, ColtUtils.vector(that)));
+    }
+
+    @Override
+    public Matrix inverse() {
+        return new ColtMatrix(Algebra.DEFAULT.inverse(colt));
     }
 
     @Override

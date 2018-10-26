@@ -21,11 +21,6 @@ public abstract class AbstractMatrix implements Matrix {
     }
 
     @Override
-    public Matrix inverse() {
-        return assign(Operation.INVERSE);
-    }
-
-    @Override
     public Matrix enrich(EnrichFunction... functions) {
         int rows = rows();
         List<Vector> enriched = new ArrayList<>();

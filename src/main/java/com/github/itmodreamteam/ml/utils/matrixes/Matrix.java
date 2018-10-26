@@ -10,6 +10,8 @@ public interface Matrix extends ColumnsProvider, RowsProvider {
 
     double[][] toArray();
 
+    double get(int rowNumber, int columnNumber);
+
     Vector row(int rowNumber);
 
     Vector col(int colNumber);
@@ -25,6 +27,8 @@ public interface Matrix extends ColumnsProvider, RowsProvider {
     double max();
 
     Matrix mult(double value);
+
+    Matrix mult(Matrix that);
 
     Vector multColumn(Vector that);
 
