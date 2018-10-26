@@ -9,6 +9,8 @@ public interface Vector {
 
     Vector assign(Vector that, BiOperation operation);
 
+    Vector mult(double val);
+
     Matrix multOuter(Vector that);
 
     double multInner(Vector that);
@@ -31,6 +33,10 @@ public interface Vector {
 
     double mean();
 
+    double min();
+
+    double max();
+
     Vector abs();
 
     Vector enrich(EnrichFunction... func);
@@ -38,4 +44,6 @@ public interface Vector {
     Matrix covariance(Vector that);
 
     Vector inverse();
+
+    Vector normalize();
 }

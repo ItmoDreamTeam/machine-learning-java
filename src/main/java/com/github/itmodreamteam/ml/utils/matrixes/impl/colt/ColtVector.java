@@ -37,6 +37,11 @@ public class ColtVector implements Vector {
     }
 
     @Override
+    public Vector mult(double val) {
+        return new ColtVector(colt.copy().assign(el -> el * val));
+    }
+
+    @Override
     public Matrix multOuter(Vector that) {
         return new ColtMatrix(Algebra.DEFAULT.multOuter(colt, ColtUtils.vector(that), new DenseDoubleMatrix2D(size(), size())));
     }
@@ -95,6 +100,16 @@ public class ColtVector implements Vector {
     }
 
     @Override
+    public double min() {
+        return Statistic.bin(colt).min();
+    }
+
+    @Override
+    public double max() {
+        return Statistic.bin(colt).max();
+    }
+
+    @Override
     public Vector abs() {
         return new ColtVector(colt.copy().assign(Operation.ABS::apply));
     }
@@ -122,6 +137,18 @@ public class ColtVector implements Vector {
     @Override
     public Vector inverse() {
         return assign(Operation.INVERSE);
+    }
+
+    @Override
+    public Vector normalize() {
+        double max = max();
+        double min = min();
+        double[] result = new double[size()];
+        double[] elements = toArray();
+        for (int i = 0; i < elements.length; ++i) {
+            result[i] = (elements[i] - min) / (max - min) - 0.5;
+        }
+        return new ColtVector(new DenseDoubleMatrix1D(result));
     }
 
     @Override

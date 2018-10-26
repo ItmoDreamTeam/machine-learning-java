@@ -1,8 +1,6 @@
 package com.github.itmodreamteam.ml.utils.io;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.util.*;
 
 public class Csv {
@@ -12,6 +10,10 @@ public class Csv {
     private Csv(Map<String, List<String>> content, int numberOfRecords) {
         this.content = content;
         this.numberOfRecords = numberOfRecords;
+    }
+
+    public static Csv read(File file, String separator, boolean ordered) throws IOException {
+        return read(new FileReader(file), separator, ordered);
     }
 
     public static Csv read(Reader reader, String separator, boolean ordered) throws IOException {

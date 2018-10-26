@@ -1,6 +1,7 @@
 package com.github.itmodreamteam.ml.utils.matrixes;
 
 import java.util.function.IntPredicate;
+import java.util.function.UnaryOperator;
 
 public interface Matrix {
     int rows();
@@ -21,7 +22,11 @@ public interface Matrix {
 
     double sum();
 
+    double max();
+
     Matrix mult(double value);
+
+    Vector multColumn(Vector that);
 
     Matrix enrich(EnrichFunction... functions);
 
@@ -46,4 +51,8 @@ public interface Matrix {
     default Matrix slice(boolean rows, IntPredicate cols) {
         return slice(rowNumber -> rows, cols);
     }
+
+    Matrix appendLeft(Vector vector);
+
+    Matrix forEachColumn(UnaryOperator<Vector> column);
 }
