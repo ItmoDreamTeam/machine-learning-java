@@ -1,13 +1,12 @@
 package com.github.itmodreamteam.ml.regression;
 
 import com.github.itmodreamteam.ml.utils.matrixes.Matrix;
-import com.github.itmodreamteam.ml.utils.matrixes.Matrixes;
 import com.github.itmodreamteam.ml.utils.matrixes.Vector;
 import com.github.itmodreamteam.ml.utils.matrixes.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GradientDescentLinearRegressionFactory implements LinearRegressionFactory {
+public class GradientDescentLinearRegressionFactory extends AbstractLinearRegressionFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(GradientDescentLinearRegressionFactory.class);
     private final int numberOfIterations;
     private final double regularization;
@@ -19,22 +18,19 @@ public class GradientDescentLinearRegressionFactory implements LinearRegressionF
     }
 
     @Override
-    public LinearRegression make(Matrix features, Vector expected) {
+    protected Vector doMake(Matrix features, Vector expected) {
         int numberOfSamples = features.rows();
         int numberOfFeatures = features.cols();
-        Matrix extendedFeatures = Matrixes.joinColumns(
-                Vectors.ones(numberOfSamples),
-                features);
-        Vector featureWeights = Vectors.zeros(numberOfFeatures + 1);
+        Vector featureWeights = Vectors.zeros(numberOfFeatures);
         for (iteration = 0; iteration < numberOfIterations; ++iteration) {
-            featureWeights = optimize(extendedFeatures, featureWeights, expected);
+            featureWeights = optimize(features, featureWeights, expected);
             int size = expected.size();
-            double cost = expected.minus(extendedFeatures.multColumn(featureWeights)).power(2).sum() / (2 * size);
+            double cost = expected.minus(features.multColumn(featureWeights)).power(2).sum() / (2 * size);
             if (needToLog()) {
                 LOGGER.info("cost: {}", cost);
             }
         }
-        return LinearRegression.of(featureWeights);
+        return featureWeights;
     }
 
     private Vector optimize(Matrix features, Vector featureWeights, Vector expected) {

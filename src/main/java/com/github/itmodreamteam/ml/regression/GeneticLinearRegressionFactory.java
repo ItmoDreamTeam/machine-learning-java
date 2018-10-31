@@ -3,7 +3,6 @@ package com.github.itmodreamteam.ml.regression;
 import com.github.itmodreamteam.ml.genetic.GeneticAlgorithm;
 import com.github.itmodreamteam.ml.genetic.Individual;
 import com.github.itmodreamteam.ml.utils.matrixes.Matrix;
-import com.github.itmodreamteam.ml.utils.matrixes.Matrixes;
 import com.github.itmodreamteam.ml.utils.matrixes.Vector;
 import com.github.itmodreamteam.ml.utils.matrixes.Vectors;
 import org.slf4j.Logger;
@@ -11,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 
-public class GeneticLinearRegressionFactory implements LinearRegressionFactory {
+public class GeneticLinearRegressionFactory extends AbstractLinearRegressionFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(GeneticLinearRegressionFactory.class);
     private final int numberOfIterations;
     private final int initialGenerationSize;
@@ -28,11 +27,7 @@ public class GeneticLinearRegressionFactory implements LinearRegressionFactory {
     }
 
     @Override
-    public LinearRegression make(Matrix features, Vector expected) {
-        features = Matrixes.joinColumns(
-                Vectors.ones(features.rows()),
-                features
-        );
+    public Vector doMake(Matrix features, Vector expected) {
         Comparator<Individual> comparator = new RegressionComparator(features, expected);
         GeneticAlgorithm algorithm = new GeneticAlgorithm(
                 numberOfIterations,
@@ -44,7 +39,7 @@ public class GeneticLinearRegressionFactory implements LinearRegressionFactory {
                 mutationProbability
         );
         double[] featureWeights = algorithm.make().getGenes();
-        return LinearRegression.of(Vectors.dense(featureWeights));
+        return Vectors.dense(featureWeights);
     }
 
     public static class RegressionComparator implements Comparator<Individual> {
