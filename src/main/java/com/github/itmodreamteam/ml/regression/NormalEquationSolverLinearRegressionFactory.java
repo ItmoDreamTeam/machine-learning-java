@@ -10,9 +10,9 @@ public class NormalEquationSolverLinearRegressionFactory implements LinearRegres
     public LinearRegression make(Matrix features, Vector expected) {
         features = Matrixes.joinColumns(
                 Vectors.ones(features.rows()),
-                features.forEachColumn(Vector::normalize)
+                features
         );
-        Matrix transposedfeatures = features.transpose();
-        return LinearRegression.of(transposedfeatures.mult(features).inverse().mult(transposedfeatures).multColumn(expected));
+        Matrix transposedFeatures = features.transpose();
+        return LinearRegression.of(transposedFeatures.mult(features).inverse().mult(transposedFeatures).multColumn(expected));
     }
 }

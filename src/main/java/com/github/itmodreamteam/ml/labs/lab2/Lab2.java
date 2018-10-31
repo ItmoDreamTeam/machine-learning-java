@@ -1,9 +1,6 @@
 package com.github.itmodreamteam.ml.labs.lab2;
 
-import com.github.itmodreamteam.ml.regression.GradientDescentLinearRegressionFactory;
-import com.github.itmodreamteam.ml.regression.LinearRegression;
-import com.github.itmodreamteam.ml.regression.LinearRegressionFactory;
-import com.github.itmodreamteam.ml.regression.NormalEquationSolverLinearRegressionFactory;
+import com.github.itmodreamteam.ml.regression.*;
 import com.github.itmodreamteam.ml.utils.ClassPathResources;
 import com.github.itmodreamteam.ml.utils.io.Csv;
 import com.github.itmodreamteam.ml.utils.matrixes.Matrix;
@@ -18,13 +15,22 @@ public class Lab2 {
 
     public static void main(final String... args) throws Exception {
         Csv csv = Csv.read(ClassPathResources.getFile("prices.txt"), ",", false);
-        Matrix features = Matrixes.dense(csv.doubles("area", "rooms"));
+        Matrix features = Matrixes.dense(csv.doubles("area", "rooms")).forEachColumn(Vector::normalize);
         Vector prices = Vectors.dense(csv.doubles("price"));
-        LinearRegressionFactory factory1 = new GradientDescentLinearRegressionFactory(1000000, 0.001);
+        LinearRegressionFactory factory1 = new GradientDescentLinearRegressionFactory(50000, 0.001);
         LinearRegressionFactory factory2 = new NormalEquationSolverLinearRegressionFactory();
-        LinearRegression regression2 = factory2.make(features, prices);
+        LinearRegressionFactory genetic1 = new GeneticLinearRegressionFactory(
+                100,
+                80,
+                20,
+                false,
+                20
+        );
         LinearRegression regression1 = factory1.make(features, prices);
+        LinearRegression regression2 = factory2.make(features, prices);
+        LinearRegression regression3 = genetic1.make(features, prices);
         LOGGER.info("{}", regression1);
         LOGGER.info("{}", regression2);
+        LOGGER.info("{}", regression3);
     }
 }

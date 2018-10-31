@@ -24,7 +24,7 @@ public class GradientDescentLinearRegressionFactory implements LinearRegressionF
         int numberOfFeatures = features.cols();
         Matrix extendedFeatures = Matrixes.joinColumns(
                 Vectors.ones(numberOfSamples),
-                features.forEachColumn(Vector::normalize));
+                features);
         Vector featureWeights = Vectors.zeros(numberOfFeatures + 1);
         for (iteration = 0; iteration < numberOfIterations; ++iteration) {
             featureWeights = optimize(extendedFeatures, featureWeights, expected);
