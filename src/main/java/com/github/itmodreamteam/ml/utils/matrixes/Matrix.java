@@ -1,5 +1,6 @@
 package com.github.itmodreamteam.ml.utils.matrixes;
 
+import java.util.function.BiFunction;
 import java.util.function.IntPredicate;
 import java.util.function.UnaryOperator;
 
@@ -58,5 +59,7 @@ public interface Matrix extends ColumnsProvider, RowsProvider {
         return slice(rowNumber -> rows, cols);
     }
 
-    Matrix forEachColumn(UnaryOperator<Vector> column);
+    Matrix forEachColumn(UnaryOperator<Vector> operator);
+
+    Matrix forEachColumnWithIndex(BiFunction<Vector, Integer, Vector> operator);
 }

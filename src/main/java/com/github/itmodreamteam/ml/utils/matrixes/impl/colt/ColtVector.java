@@ -46,6 +46,7 @@ class ColtVector implements Vector {
         return new ColtMatrix(Algebra.DEFAULT.multOuter(colt, ColtUtils.vector(that), new DenseDoubleMatrix2D(size(), size())));
     }
 
+    // TODO check dimension
     @Override
     public double multInner(Vector that) {
         return Algebra.DEFAULT.mult(colt, ColtUtils.vector(that));

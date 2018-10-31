@@ -3,6 +3,7 @@ package com.github.itmodreamteam.ml.utils.matrixes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 public abstract class AbstractMatrix implements Matrix {
@@ -40,11 +41,16 @@ public abstract class AbstractMatrix implements Matrix {
 
     @Override
     public Matrix forEachColumn(UnaryOperator<Vector> operator) {
+        return forEachColumnWithIndex((column, index) -> operator.apply(column));
+    }
+
+    @Override
+    public Matrix forEachColumnWithIndex(BiFunction<Vector, Integer, Vector> operator) {
         int numberOfRows = rows();
         int numberOfCols = cols();
         double[][] result = new double[numberOfRows][numberOfCols];
         for (int col = 0; col < numberOfCols; ++col) {
-            double[] column = operator.apply(col(col)).toArray();
+            double[] column = operator.apply(col(col), col).toArray();
             for (int row = 0; row < numberOfRows; ++row) {
                 result[row][col] = column[row];
             }
