@@ -9,17 +9,16 @@ import org.slf4j.LoggerFactory;
 public class GradientDescentLinearRegressionFactory extends AbstractLinearRegressionFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(GradientDescentLinearRegressionFactory.class);
     private final int numberOfIterations;
-    private final double regularization;
+    private final double rate;
     private int iteration;
 
-    public GradientDescentLinearRegressionFactory(int numberOfIterations, double regularization) {
+    public GradientDescentLinearRegressionFactory(int numberOfIterations, double rate) {
         this.numberOfIterations = numberOfIterations;
-        this.regularization = regularization;
+        this.rate = rate;
     }
 
     @Override
     protected Vector doMake(Matrix features, Vector expected) {
-        int numberOfSamples = features.rows();
         int numberOfFeatures = features.cols();
         Vector featureWeights = Vectors.zeros(numberOfFeatures);
         for (iteration = 0; iteration < numberOfIterations; ++iteration) {
@@ -35,7 +34,7 @@ public class GradientDescentLinearRegressionFactory extends AbstractLinearRegres
 
     private Vector optimize(Matrix features, Vector featureWeights, Vector expected) {
         Vector gradient = computeGradient(features, expected, features.multColumn(featureWeights));
-        return featureWeights.minus(gradient.mult(regularization));
+        return featureWeights.minus(gradient.mult(rate));
     }
 
     private Vector computeGradient(Matrix features, Vector expected, Vector actual) {
@@ -44,11 +43,11 @@ public class GradientDescentLinearRegressionFactory extends AbstractLinearRegres
         for (int featureNumber = 0; featureNumber < numberOfFeatures; ++featureNumber) {
             Vector feature = features.col(featureNumber);
             double partialDerivative = 0.0;
-            int datasetSize = features.rows();
-            for (int sampleNumber = 0; sampleNumber < datasetSize; ++sampleNumber) {
+            int numberOfSamples = features.rows();
+            for (int sampleNumber = 0; sampleNumber < numberOfSamples; ++sampleNumber) {
                 partialDerivative += (actual.get(sampleNumber) - expected.get(sampleNumber)) * feature.get(sampleNumber);
             }
-            partialDerivative /= datasetSize;
+            partialDerivative /= numberOfSamples;
             gradient[featureNumber] = partialDerivative;
         }
         return Vectors.dense(gradient);
