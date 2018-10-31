@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
 
-public class GeneticAlgorithm {
+public class GeneticAlgorithm<T extends Individual> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GeneticAlgorithm.class);
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
     private static final int SCALE = 1_000_000;
@@ -17,11 +17,12 @@ public class GeneticAlgorithm {
     private final int initialGenerationSize;
     private final int selectionSize;
     private final int numberOfGenes;
-    private final Comparator<Individual> comparator;
+    private final Comparator<T> comparator;
     private final boolean killParents;
     private final int mutationProbability;
+    private final IndividualFactory<T> factory;
 
-    public GeneticAlgorithm(int numberOfGenerations, int initialGenerationSize, int selectionSize, int numberOfGenes, Comparator<Individual> comparator, boolean killParents, int mutationProbability) {
+    public GeneticAlgorithm(int numberOfGenerations, int initialGenerationSize, int selectionSize, int numberOfGenes, Comparator<T> comparator, boolean killParents, int mutationProbability, IndividualFactory<T> factory) {
         this.numberOfGenerations = numberOfGenerations;
         this.initialGenerationSize = initialGenerationSize;
         this.selectionSize = selectionSize;
@@ -29,10 +30,11 @@ public class GeneticAlgorithm {
         this.comparator = comparator;
         this.killParents = killParents;
         this.mutationProbability = mutationProbability;
+        this.factory = factory;
     }
 
-    public Individual make() {
-        List<Individual> generation = createInitialGeneration();
+    public T make() {
+        List<T> generation = createInitialGeneration();
         for (int generationNumber = 0; generationNumber < numberOfGenerations; ++generationNumber) {
             generation = runGeneration(generation);
             LOGGER.info("generation: {}", generationNumber, generation.size());
@@ -41,17 +43,17 @@ public class GeneticAlgorithm {
         return chooseBest(generation, 1).get(0);
     }
 
-    private List<Individual> runGeneration(List<Individual> generation) {
-        List<Individual> selection = chooseBest(generation, selectionSize);
-        List<Individual> children = new ArrayList<>();
-        for (Individual first : selection) {
-            for (Individual second : selection) {
-                Individual child = makeChild(first, second);
+    private List<T> runGeneration(List<T> generation) {
+        List<T> selection = chooseBest(generation, selectionSize);
+        List<T> children = new ArrayList<>();
+        for (T first : selection) {
+            for (T second : selection) {
+                T child = makeChild(first, second);
                 children.add(child);
             }
         }
 
-        List<Individual> nextGeneration = new ArrayList<>();
+        List<T> nextGeneration = new ArrayList<>();
 
         if (!killParents) {
             nextGeneration.addAll(selection);
@@ -61,10 +63,10 @@ public class GeneticAlgorithm {
         return nextGeneration;
     }
 
-    private List<Individual> chooseBest(List<Individual> generation, int selectionSize) {
-        Map<Individual, Integer> score = new HashMap<>();
-        for (Individual first : generation) {
-            for (Individual second : generation) {
+    private List<T> chooseBest(List<T> generation, int selectionSize) {
+        Map<T, Integer> score = new HashMap<>();
+        for (T first : generation) {
+            for (T second : generation) {
                 if (comparator.compare(first, second) > 0) {
                     score.merge(first, 1, (i1, i2) -> i1 + i2);
                 } else {
@@ -72,7 +74,6 @@ public class GeneticAlgorithm {
                 }
             }
         }
-
 
         return score.entrySet()
                 .stream()
@@ -82,7 +83,7 @@ public class GeneticAlgorithm {
                 .collect(toList());
     }
 
-    private Individual makeChild(Individual first, Individual second) {
+    private T makeChild(T first, T second) {
         int crossLine = RANDOM.nextInt(numberOfGenes);
         double[] childGenes = new double[numberOfGenes];
         System.arraycopy(first.getGenes(), 0, childGenes, 0, crossLine);
@@ -93,7 +94,7 @@ public class GeneticAlgorithm {
             }
         }
 
-        return new Individual(childGenes);
+        return factory.create(childGenes);
     }
 
     private double mutate(double gene) {
@@ -104,17 +105,17 @@ public class GeneticAlgorithm {
         return RANDOM.nextInt(100) < mutationProbability;
     }
 
-    private List<Individual> createInitialGeneration() {
+    private List<T> createInitialGeneration() {
         return IntStream.range(0, initialGenerationSize)
                 .mapToObj(i -> generateRandom())
                 .collect(toList());
     }
 
-    private Individual generateRandom() {
+    private T generateRandom() {
         double[] genes = new double[numberOfGenes];
         for (int genNumber = 0; genNumber < numberOfGenes; ++genNumber) {
             genes[genNumber] = RANDOM.nextDouble() * SCALE;
         }
-        return new Individual(genes);
+        return factory.create(genes);
     }
 }

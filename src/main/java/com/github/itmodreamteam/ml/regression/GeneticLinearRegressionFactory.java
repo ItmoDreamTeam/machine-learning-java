@@ -8,8 +8,6 @@ import com.github.itmodreamteam.ml.utils.matrixes.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
-
 public class GeneticLinearRegressionFactory extends AbstractLinearRegressionFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(GeneticLinearRegressionFactory.class);
     private final int numberOfIterations;
@@ -28,39 +26,26 @@ public class GeneticLinearRegressionFactory extends AbstractLinearRegressionFact
 
     @Override
     public Vector doMake(Matrix features, Vector expected) {
-        Comparator<Individual> comparator = new RegressionComparator(features, expected);
-        GeneticAlgorithm algorithm = new GeneticAlgorithm(
+        GeneticAlgorithm<RegressionIndividual> algorithm = new GeneticAlgorithm<>(
                 numberOfIterations,
                 initialGenerationSize,
                 selectionSize,
                 features.cols(),
-                comparator,
+                (in1, in2) -> Double.compare(in2.cost, in1.cost),
                 killParents,
-                mutationProbability
-        );
+                mutationProbability,
+                genes -> new RegressionIndividual(genes, features, expected));
         double[] featureWeights = algorithm.make().getGenes();
         return Vectors.dense(featureWeights);
     }
 
-    public static class RegressionComparator implements Comparator<Individual> {
-        private final Matrix features;
-        private final Vector expected;
+    private static class RegressionIndividual extends Individual {
+        private final double cost;
 
-        public RegressionComparator(Matrix features, Vector expected) {
-            this.features = features;
-            this.expected = expected;
+        RegressionIndividual(double[] genes, Matrix features, Vector expected) {
+            super(genes);
+            Vector featureWeights = Vectors.dense(genes);
+            this.cost = expected.minus(features.multColumn(featureWeights)).power(2).sum() / (2 * features.rows());
         }
-
-        @Override
-        public int compare(Individual o1, Individual o2) {
-            Vector v1 = Vectors.dense(o2.getGenes());
-            Vector v2 = Vectors.dense(o1.getGenes());
-            return Double.compare(cost(v1), cost(v2));
-        }
-
-        private double cost(Vector featureWeights) {
-            return expected.minus(features.multColumn(featureWeights)).power(2).sum() / (2 * features.rows());
-        }
-
     }
 }
