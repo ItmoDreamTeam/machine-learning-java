@@ -2,12 +2,18 @@ package com.github.itmodreamteam.ml.labs.lab2;
 
 import com.github.itmodreamteam.ml.regression.*;
 import com.github.itmodreamteam.ml.utils.ClassPathResources;
+import com.github.itmodreamteam.ml.utils.CostFunctions;
 import com.github.itmodreamteam.ml.utils.io.Csv;
-import com.github.itmodreamteam.ml.utils.matrixes.*;
+import com.github.itmodreamteam.ml.utils.matrixes.Matrix;
+import com.github.itmodreamteam.ml.utils.matrixes.Matrixes;
+import com.github.itmodreamteam.ml.utils.matrixes.Vector;
+import com.github.itmodreamteam.ml.utils.matrixes.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Lab2 {
@@ -19,7 +25,7 @@ public class Lab2 {
         Csv csv = Csv.read(ClassPathResources.getFile("prices.txt"), ",", false);
         Matrix features = Matrixes.dense(csv.doubles("area", "rooms"));
         Vector prices = Vectors.dense(csv.doubles("price"));
-        LinearRegressionFactory factory1 = new GradientDescentLinearRegressionFactory(50000, 0.001);
+        LinearRegressionFactory factory1 = new GradientDescentLinearRegressionFactory(1000000, 0.1, 0.9);
         LinearRegressionFactory factory2 = new NormalEquationSolverLinearRegressionFactory();
         LinearRegressionFactory genetic1 = new GeneticLinearRegressionFactory(
                 100,
@@ -28,22 +34,28 @@ public class Lab2 {
                 false,
                 20
         );
-        LinearRegression regression1 = factory1.make(features, prices);
-        LinearRegression regression2 = factory2.make(features, prices);
-        LinearRegression regression3 = genetic1.make(features, prices);
 
-        LOGGER.info("{}", regression1);
-        LOGGER.info("{}", regression2);
-        LOGGER.info("{}", regression3);
-        test(regression1);
-        test(regression2);
-        test(regression3);
+        List<LinearRegressionFactory> regressions = new ArrayList<>();
+        regressions.add(factory1);
+        regressions.add(factory2);
+        regressions.add(genetic1);
+
+        for (LinearRegressionFactory factory : regressions) {
+            System.out.println("regression: " + factory);
+            LinearRegression regression = factory.make(features, prices);
+            printStatus(regression, features, prices);
+            test(regression);
+        }
+    }
+
+    private static void printStatus(LinearRegression regression, Matrix features, Vector expected) {
+        System.out.println(String.format("%s: root of mse: %s", regression, Math.sqrt(CostFunctions.computeMse(expected, regression.answer(features)) / 2)));
     }
 
     private static void test(LinearRegression regression) {
         while (true) {
             String line = SCANNER.nextLine();
-            if (line.equalsIgnoreCase("quit")) {
+            if (line.trim().isEmpty()) {
                 break;
             } else {
                 Vector features = parseDoubles(line);

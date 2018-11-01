@@ -1,5 +1,6 @@
 package com.github.itmodreamteam.ml.regression;
 
+import com.github.itmodreamteam.ml.utils.CostFunctions;
 import com.github.itmodreamteam.ml.utils.matrixes.Matrix;
 import com.github.itmodreamteam.ml.utils.matrixes.Vector;
 import com.github.itmodreamteam.ml.utils.matrixes.Vectors;
@@ -8,25 +9,45 @@ import org.slf4j.LoggerFactory;
 
 public class GradientDescentLinearRegressionFactory extends AbstractLinearRegressionFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(GradientDescentLinearRegressionFactory.class);
-    private final int numberOfIterations;
-    private final double rate;
+    private static final double MIN_RATE = 1e-12;
+    private final int maximalNumberOfIterations;
+    private double rate;
+    private final double dropRate;
     private int iteration;
+    private double bestCost = Double.MAX_VALUE;
 
-    public GradientDescentLinearRegressionFactory(int numberOfIterations, double rate) {
-        this.numberOfIterations = numberOfIterations;
+    public GradientDescentLinearRegressionFactory(int maximalNumberOfIterations, double rate, double dropRate) {
+        this.maximalNumberOfIterations = maximalNumberOfIterations;
         this.rate = rate;
+        this.dropRate = dropRate;
     }
 
     @Override
     protected Vector doMake(Matrix features, Vector expected) {
         int numberOfFeatures = features.cols();
         Vector featureWeights = Vectors.zeros(numberOfFeatures);
-        for (iteration = 0; iteration < numberOfIterations; ++iteration) {
-            featureWeights = optimize(features, featureWeights, expected);
-            int size = expected.size();
-            double cost = expected.minus(features.multColumn(featureWeights)).power(2).sum() / (2 * size);
+        for (iteration = 0; iteration < maximalNumberOfIterations; ++iteration) {
+            if (rateIsTooSmall()) {
+                LOGGER.info("rate is too small, local minimum has been found, iteration: {}, cost: {}", iteration, bestCost);
+                break;
+            }
+            while (true) {
+                if (rateIsTooSmall()) {
+                    break;
+                }
+                Vector candidateFeatureWeights = optimize(features, featureWeights, expected);
+                double cost = CostFunctions.computeMse(expected, features.multColumn(featureWeights)) / 2;
+
+                if (bestCost < cost) {
+                    rate *= dropRate;
+                } else {
+                    bestCost = cost;
+                    featureWeights = candidateFeatureWeights;
+                    break;
+                }
+            }
             if (needToLog()) {
-                LOGGER.info("cost: {}", cost);
+                LOGGER.info("cost: {}", bestCost);
             }
         }
         return featureWeights;
@@ -53,8 +74,23 @@ public class GradientDescentLinearRegressionFactory extends AbstractLinearRegres
         return Vectors.dense(gradient);
     }
 
+    private boolean rateIsTooSmall() {
+        return rate < MIN_RATE;
+    }
+
     private boolean needToLog() {
-        int rate = numberOfIterations / 100;
+        int rate = maximalNumberOfIterations / 100;
         return iteration % rate == 0;
+    }
+
+    @Override
+    public String toString() {
+        return "GradientDescentLinearRegressionFactory{" +
+                "maximalNumberOfIterations=" + maximalNumberOfIterations +
+                ", rate=" + rate +
+                ", dropRate=" + dropRate +
+                ", iteration=" + iteration +
+                ", bestCost=" + bestCost +
+                '}';
     }
 }

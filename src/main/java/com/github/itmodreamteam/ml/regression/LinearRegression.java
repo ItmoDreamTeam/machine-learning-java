@@ -1,8 +1,6 @@
 package com.github.itmodreamteam.ml.regression;
 
-import com.github.itmodreamteam.ml.utils.matrixes.Operation;
-import com.github.itmodreamteam.ml.utils.matrixes.Vector;
-import com.github.itmodreamteam.ml.utils.matrixes.Vectors;
+import com.github.itmodreamteam.ml.utils.matrixes.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +26,10 @@ public class LinearRegression {
         this.featureWeights = featureWeights;
         this.normalizers = normalizers;
         this.appendBias = appendBias;
+    }
+
+    public Vector answer(Matrix features) {
+        return Vectors.dense(features.getRows().stream().mapToDouble(this::answer).toArray());
     }
 
     public double answer(Vector features) {

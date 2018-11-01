@@ -48,4 +48,15 @@ public class GeneticLinearRegressionFactory extends AbstractLinearRegressionFact
             this.cost = expected.minus(features.multColumn(featureWeights)).power(2).sum() / (2 * features.rows());
         }
     }
+
+    @Override
+    public String toString() {
+        return "GeneticLinearRegressionFactory{" +
+                "numberOfIterations=" + numberOfIterations +
+                ", initialGenerationSize=" + initialGenerationSize +
+                ", selectionSize=" + selectionSize +
+                ", killParents=" + killParents +
+                ", mutationProbability=" + mutationProbability +
+                '}';
+    }
 }

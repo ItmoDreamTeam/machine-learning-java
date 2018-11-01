@@ -9,4 +9,9 @@ public class NormalEquationSolverLinearRegressionFactory extends AbstractLinearR
         Matrix transposedFeatures = features.transpose();
         return transposedFeatures.mult(features).inverse().mult(transposedFeatures).multColumn(expected);
     }
+
+    @Override
+    public String toString() {
+        return "NormalEquationSolverLinearRegressionFactory{}";
+    }
 }
