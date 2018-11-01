@@ -12,7 +12,9 @@ import static java.util.stream.Collectors.toList;
 public class GeneticAlgorithm<T extends Individual> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GeneticAlgorithm.class);
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
-    private static final int SCALE = 1_000_000;
+    // TODO should be customizable?
+    private final int lowerGeneValue = -1_000_000;
+    private final int upperGeneBound = 1_000_000;
     private final int numberOfGenerations;
     private final int initialGenerationSize;
     private final int selectionSize;
@@ -59,7 +61,6 @@ public class GeneticAlgorithm<T extends Individual> {
             nextGeneration.addAll(selection);
         }
         nextGeneration.addAll(children);
-        nextGeneration.addAll(createInitialGeneration());
         return nextGeneration;
     }
 
@@ -114,7 +115,7 @@ public class GeneticAlgorithm<T extends Individual> {
     private T generateRandom() {
         double[] genes = new double[numberOfGenes];
         for (int genNumber = 0; genNumber < numberOfGenes; ++genNumber) {
-            genes[genNumber] = RANDOM.nextDouble() * SCALE;
+            genes[genNumber] = RANDOM.nextDouble(lowerGeneValue, upperGeneBound);
         }
         return factory.create(genes);
     }
