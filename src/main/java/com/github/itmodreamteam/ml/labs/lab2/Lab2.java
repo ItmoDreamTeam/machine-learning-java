@@ -12,13 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
 public class Lab2 {
     private static final Scanner SCANNER = new Scanner(System.in);
-
     private static final Logger LOGGER = LoggerFactory.getLogger(Lab2.class);
 
     public static void main(final String... args) throws Exception {
@@ -49,26 +47,23 @@ public class Lab2 {
     }
 
     private static void printStatus(LinearRegression regression, Matrix features, Vector expected) {
-        System.out.println(String.format("%s: root of mse: %s", regression, Math.sqrt(CostFunctions.computeMse(expected, regression.answer(features)) / 2)));
+        System.out.println(String.format("%s: mse: %s", regression, CostFunctions.computeMse(expected, regression.answer(features))));
     }
 
     private static void test(LinearRegression regression) {
         while (true) {
+            System.out.print("Want to test? (y/n) ");
             String line = SCANNER.nextLine();
-            if (line.trim().isEmpty()) {
-                break;
-            } else {
-                Vector features = parseDoubles(line);
+            if (line.trim().equalsIgnoreCase("y")) {
+                System.out.print("Enter area: ");
+                double area = Double.parseDouble(SCANNER.nextLine());
+                System.out.print("Enter number of rooms: ");
+                double numberOfRooms = Double.parseDouble(SCANNER.nextLine());
+                Vector features = Vectors.dense(area, numberOfRooms);
                 System.out.println(regression.answer(features));
+            } else {
+                break;
             }
         }
-    }
-
-    private static Vector parseDoubles(String line) {
-        double[] doubles = Arrays.stream(line.split(","))
-                .map(String::trim)
-                .mapToDouble(Double::parseDouble)
-                .toArray();
-        return Vectors.dense(doubles);
     }
 }

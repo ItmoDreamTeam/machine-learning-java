@@ -39,8 +39,6 @@ public class GeneticAlgorithm<T extends Individual> {
         List<T> generation = createInitialGeneration();
         for (int generationNumber = 0; generationNumber < numberOfGenerations; ++generationNumber) {
             generation = runGeneration(generation);
-            LOGGER.info("generation: {}", generationNumber, generation.size());
-
         }
         return chooseBest(generation, 1).get(0);
     }
@@ -89,13 +87,18 @@ public class GeneticAlgorithm<T extends Individual> {
         double[] childGenes = new double[numberOfGenes];
         System.arraycopy(first.getGenes(), 0, childGenes, 0, crossLine);
         System.arraycopy(second.getGenes(), crossLine, childGenes, crossLine, numberOfGenes - crossLine);
+        double[] mutatedChildGenes = new double[numberOfGenes];
         for (int genNumber = 0; genNumber < numberOfGenes; ++genNumber) {
-            if (shouldMutate()) {
-                childGenes[genNumber] = mutate(childGenes[genNumber]);
-            }
+            mutatedChildGenes[genNumber] = mutate(childGenes[genNumber]);
         }
 
-        return factory.create(childGenes);
+        T child = factory.create(childGenes);
+        T mutant = factory.create(mutatedChildGenes);
+        if (comparator.compare(child, mutant) > 0) {
+            return child;
+        } else {
+            return mutant;
+        }
     }
 
     private double mutate(double gene) {

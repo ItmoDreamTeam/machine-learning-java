@@ -10,9 +10,10 @@ import org.slf4j.LoggerFactory;
 public class GradientDescentLinearRegressionFactory extends AbstractLinearRegressionFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(GradientDescentLinearRegressionFactory.class);
     private static final double MIN_RATE = 1e-12;
+    private static final double EPS = 1e-4;
     private final int maximalNumberOfIterations;
-    private double rate;
     private final double dropRate;
+    private double rate;
     private int iteration;
     private double bestCost = Double.MAX_VALUE;
 
@@ -27,16 +28,13 @@ public class GradientDescentLinearRegressionFactory extends AbstractLinearRegres
         int numberOfFeatures = features.cols();
         Vector featureWeights = Vectors.zeros(numberOfFeatures);
         for (iteration = 0; iteration < maximalNumberOfIterations; ++iteration) {
-            if (rateIsTooSmall()) {
-                LOGGER.info("rate is too small, local minimum has been found, iteration: {}, cost: {}", iteration, bestCost);
-                break;
-            }
+            double cost = 0;
             while (true) {
                 if (rateIsTooSmall()) {
                     break;
                 }
                 Vector candidateFeatureWeights = optimize(features, featureWeights, expected);
-                double cost = CostFunctions.computeMse(expected, features.multColumn(featureWeights)) / 2;
+                cost = CostFunctions.computeMse(expected, features.multColumn(featureWeights)) / 2;
 
                 if (bestCost < cost) {
                     rate *= dropRate;
@@ -45,6 +43,10 @@ public class GradientDescentLinearRegressionFactory extends AbstractLinearRegres
                     featureWeights = candidateFeatureWeights;
                     break;
                 }
+            }
+            if (Math.abs(cost - bestCost) / bestCost > EPS) {
+                LOGGER.info("local minimum has been found, iteration: {}, cost: {}", iteration, bestCost);
+                break;
             }
             if (needToLog()) {
                 LOGGER.info("cost: {}", bestCost);
@@ -89,8 +91,6 @@ public class GradientDescentLinearRegressionFactory extends AbstractLinearRegres
                 "maximalNumberOfIterations=" + maximalNumberOfIterations +
                 ", rate=" + rate +
                 ", dropRate=" + dropRate +
-                ", iteration=" + iteration +
-                ", bestCost=" + bestCost +
                 '}';
     }
 }

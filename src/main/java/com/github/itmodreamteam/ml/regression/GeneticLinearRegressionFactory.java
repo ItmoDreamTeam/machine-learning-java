@@ -10,14 +10,14 @@ import org.slf4j.LoggerFactory;
 
 public class GeneticLinearRegressionFactory extends AbstractLinearRegressionFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(GeneticLinearRegressionFactory.class);
-    private final int numberOfIterations;
+    private final int numberOfGenerations;
     private final int initialGenerationSize;
     private final int selectionSize;
     private final boolean killParents;
     private final int mutationProbability;
 
-    public GeneticLinearRegressionFactory(int numberOfIterations, int initialGenerationSize, int selectionSize, boolean killParents, int mutationProbability) {
-        this.numberOfIterations = numberOfIterations;
+    public GeneticLinearRegressionFactory(int numberOfGenerations, int initialGenerationSize, int selectionSize, boolean killParents, int mutationProbability) {
+        this.numberOfGenerations = numberOfGenerations;
         this.initialGenerationSize = initialGenerationSize;
         this.selectionSize = selectionSize;
         this.killParents = killParents;
@@ -27,7 +27,7 @@ public class GeneticLinearRegressionFactory extends AbstractLinearRegressionFact
     @Override
     public Vector doMake(Matrix features, Vector expected) {
         GeneticAlgorithm<RegressionIndividual> algorithm = new GeneticAlgorithm<>(
-                numberOfIterations,
+                numberOfGenerations,
                 initialGenerationSize,
                 selectionSize,
                 features.cols(),
@@ -52,7 +52,7 @@ public class GeneticLinearRegressionFactory extends AbstractLinearRegressionFact
     @Override
     public String toString() {
         return "GeneticLinearRegressionFactory{" +
-                "numberOfIterations=" + numberOfIterations +
+                "numberOfGenerations=" + numberOfGenerations +
                 ", initialGenerationSize=" + initialGenerationSize +
                 ", selectionSize=" + selectionSize +
                 ", killParents=" + killParents +
