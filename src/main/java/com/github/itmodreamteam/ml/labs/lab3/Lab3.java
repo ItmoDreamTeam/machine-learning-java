@@ -41,7 +41,7 @@ public class Lab3 {
             words.add(all);
         }
 
-        ClassifierFactory<List<Integer>, Boolean> factory = new BinaryNaiveBayesClassifierFactory(1.3);
+        ClassifierFactory<List<Integer>, Boolean> factory = new BinaryNaiveBayesClassifierFactory<>(1.3);
         ClassifierCrossValidator<List<Integer>, Boolean> validator = new ClassifierCrossValidator<>(factory, 2);
         Metric metric = validator.validate(Samples.of(words, spamOrNot), 10);
         LOG.info("metric = {}", metric);

@@ -6,7 +6,7 @@ import com.github.itmodreamteam.ml.validation.Samples;
 
 import java.util.List;
 
-public class BinaryNaiveBayesClassifierFactory implements ClassifierFactory<List<Integer>, Boolean> {
+public class BinaryNaiveBayesClassifierFactory<T> implements ClassifierFactory<List<T>, Boolean> {
     private final double threshold;
 
     public BinaryNaiveBayesClassifierFactory(double threshold) {
@@ -14,7 +14,7 @@ public class BinaryNaiveBayesClassifierFactory implements ClassifierFactory<List
     }
 
     @Override
-    public Classifier<List<Integer>, Boolean> build(Samples<List<Integer>, Boolean> samples) {
-        return new BinaryNaiveBayesClassifier(samples.getFeatures(), samples.getAnswers(), threshold);
+    public Classifier<List<T>, Boolean> build(Samples<List<T>, Boolean> samples) {
+        return new BinaryNaiveBayesClassifier<>(samples.getFeatures(), samples.getAnswers(), threshold);
     }
 }
