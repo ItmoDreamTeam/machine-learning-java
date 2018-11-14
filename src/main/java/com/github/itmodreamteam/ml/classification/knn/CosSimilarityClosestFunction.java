@@ -1,4 +1,4 @@
-package com.github.itmodreamteam.ml.labs.lab1.knn;
+package com.github.itmodreamteam.ml.classification.knn;
 
 import com.github.itmodreamteam.ml.utils.matrixes.Operation;
 import com.github.itmodreamteam.ml.utils.matrixes.Vector;

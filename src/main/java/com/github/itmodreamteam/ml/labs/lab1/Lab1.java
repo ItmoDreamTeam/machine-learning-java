@@ -1,6 +1,6 @@
 package com.github.itmodreamteam.ml.labs.lab1;
 
-import com.github.itmodreamteam.ml.labs.lab1.knn.*;
+import com.github.itmodreamteam.ml.classification.knn.*;
 import com.github.itmodreamteam.ml.metric.Metric;
 import com.github.itmodreamteam.ml.utils.SliceUtils;
 import com.github.itmodreamteam.ml.utils.io.Csv;

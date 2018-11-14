@@ -1,4 +1,4 @@
-package com.github.itmodreamteam.ml.labs.lab1.knn;
+package com.github.itmodreamteam.ml.classification.knn;
 
 public enum KnnImportanceFunctions implements KnnImportanceFunction {
     EPANCHIKOV {
