@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
 
-public class KnnClassifier implements Classifier {
+public class KnnClassifier implements Classifier<Vector, Integer> {
     private final int numberOfNeighbors;
     private final KnnClosestFunction meter;
     private final KnnImportanceFunction importanceFunction;
@@ -29,7 +29,7 @@ public class KnnClassifier implements Classifier {
     }
 
     @Override
-    public int classify(Vector val) {
+    public Integer classify(Vector val) {
         List<Neighbor> nearestNeighbors = IntStream.range(0, train.rows())
                 .mapToObj(i -> new Neighbor(meter.dist(train.row(i), val), classes.get(i)))
                 .sorted(Comparator.comparingDouble(Neighbor::getDist))

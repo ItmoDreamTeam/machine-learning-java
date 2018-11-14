@@ -1,17 +1,21 @@
 package com.github.itmodreamteam.ml.metric;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class Metric {
+public class Metric<A> {
     private final Stats[] stats;
+    private final Map<A, Integer> index;
 
-    public static Builder builder(int numberOfClasses) {
-        return new Builder(numberOfClasses);
+    public static <A> Builder<A> builder(int numberOfClasses) {
+        return new Builder<>(numberOfClasses);
     }
 
-    private Metric(Builder builder) {
+    private Metric(Builder<A> builder) {
         this.stats = new Stats[builder.numberOfClasses];
+        this.index = builder.index;
         for (int classLabel = 0; classLabel < builder.numberOfClasses; ++classLabel) {
             int truePositive = builder.stat[classLabel][classLabel];
             // truePositive + falsePositive
@@ -44,8 +48,9 @@ public class Metric {
         return col;
     }
 
-    private Metric(Stats[] stats) {
+    private Metric(Stats[] stats, Map<A, Integer> index) {
         this.stats = stats;
+        this.index = index;
     }
 
     public double precision(int label) {
@@ -76,11 +81,12 @@ public class Metric {
         return Arrays.toString(stats);
     }
 
-    public static Metric average(List<Metric> metrics) {
+    public static <A> Metric<A> average(List<Metric<A>> metrics) {
         if (metrics == null || metrics.size() == 0) {
             throw new IllegalArgumentException("metrics cannot be null or empty to compute average metric");
         }
         int numberOfClasses = metrics.get(0).stats.length;
+        Map<A, Integer> index = metrics.get(0).index; // TODO check
         Stats[] avgMetrics = new Stats[numberOfClasses];
         for (int label = 0; label < numberOfClasses; ++label) {
             double totalPrecision = 0;
@@ -99,7 +105,7 @@ public class Metric {
             double avgAccuracy = totalAccuracy / metrics.size();
             avgMetrics[label] = new Stats(avgPrecision, avgRecall, avgAccuracy);
         }
-        return new Metric(avgMetrics);
+        return new Metric<>(avgMetrics, index);
     }
 
     private static class Stats {
@@ -123,22 +129,34 @@ public class Metric {
         }
     }
 
-    public static class Builder {
+    public static class Builder<A> {
         private final int numberOfClasses;
         private final int[][] stat;
+        private final Map<A, Integer> index = new HashMap<>();
+        private int currentIndex = 0;
 
         public Builder(int numberOfClasses) {
             this.numberOfClasses = numberOfClasses;
             this.stat = new int[numberOfClasses][numberOfClasses];
         }
 
-        public Builder with(int expected, int actual) {
-            stat[actual][expected]++;
+        public Builder with(A expected, A actual) {
+            int expectedIndex = updateIndex(expected);
+            int actualIndex = updateIndex(actual);
+            stat[actualIndex][expectedIndex]++;
             return this;
         }
 
-        public Metric build() {
-            return new Metric(this);
+        private int updateIndex(A answer) {
+            if (!index.containsKey(answer)) {
+                index.put(answer, currentIndex);
+                currentIndex++;
+            }
+            return index.get(answer);
+        }
+
+        public Metric<A> build() {
+            return new Metric<>(this);
         }
     }
 }

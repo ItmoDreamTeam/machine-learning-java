@@ -2,13 +2,13 @@ package com.github.itmodreamteam.ml.labs.lab1;
 
 import com.github.itmodreamteam.ml.labs.lab1.knn.*;
 import com.github.itmodreamteam.ml.metric.Metric;
-import com.github.itmodreamteam.ml.utils.collections.IntList;
-import com.github.itmodreamteam.ml.utils.collections.Lists;
+import com.github.itmodreamteam.ml.utils.SliceUtils;
 import com.github.itmodreamteam.ml.utils.io.Csv;
 import com.github.itmodreamteam.ml.utils.matrixes.Matrix;
 import com.github.itmodreamteam.ml.utils.matrixes.Matrixes;
 import com.github.itmodreamteam.ml.utils.matrixes.Vector;
 import com.github.itmodreamteam.ml.validation.ClassifierCrossValidator;
+import com.github.itmodreamteam.ml.validation.Samples;
 import com.github.sh0nk.matplotlib4j.Plot;
 import com.github.sh0nk.matplotlib4j.PythonExecutionException;
 import org.slf4j.Logger;
@@ -19,6 +19,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -45,11 +46,10 @@ public class Lab1 {
         List<KnnClosestFunction> meters = new ArrayList<>();
         meters.add(KnnClosestFunction.euclidian());
         meters.add(KnnClosestFunction.manhattan());
-        meters.add(KnnClosestFunction.mahalanobis());
         meters.add(KnnClosestFunction.cosSimilarity());
 
         Matrix features = Matrixes.dense(csv.doubles("X", "Y"));
-        IntList classes = Lists.of(csv.ints("Class"));
+        List<Integer> classes = Arrays.stream(csv.ints("Class")).boxed().collect(toList());
 
         List<DimensionTransformer> transformers = new ArrayList<>();
         transformers.add(DimensionTransformer.IDENTITY);
@@ -65,13 +65,12 @@ public class Lab1 {
                     for (KnnClosestFunction meter : meters) {
                         LOG.debug("meter: {}", meter);
                         for (KnnImportanceFunction importanceFunction : KnnImportanceFunctions.values()) {
-                            ClassifierCrossValidator validator = ClassifierCrossValidator.of(
+                            ClassifierCrossValidator<Vector, Integer> validator = new ClassifierCrossValidator<>(
                                     Knns.of(numberOfNeighbors, meter, importanceFunction, 2),
-                                    transformedFeatures,
-                                    classes
+                                    2
                             );
 
-                            Metric metric = validator.validate(numberOfBatches);
+                            Metric<Integer> metric = validator.validate(Samples.of(transformedFeatures, classes), numberOfBatches);
                             LOG.debug("neighbor: {}, batches: {}, meter: {}, kernel: {}, transformer: {}, f1mesure(0): {}",
                                     numberOfNeighbors,
                                     numberOfBatches,
@@ -120,12 +119,13 @@ public class Lab1 {
     }
 
     // TODO refactor
-    private void visualizeKnn(Matrix features, IntList classes, Knns knns, double trainPart) throws Exception {
+    //*
+    private void visualizeKnn(Matrix features, List<Integer> classes, Knns knns, double trainPart) throws Exception {
         Matrix trainFeatures = features.slice(row -> 1.0 * row / features.rows() <= trainPart, true);
-        IntList trainClasses = classes.slice(row -> 1.0 * row / features.rows() <= trainPart);
-        KnnClassifier knn = knns.build(trainFeatures, trainClasses);
+        List<Integer> trainClasses = SliceUtils.slice(classes, row -> 1.0 * row / features.rows() <= trainPart);
+        KnnClassifier knn = knns.build(Samples.of(trainFeatures, trainClasses));
         Matrix testFeatures = features.slice(row -> 1.0 * row / features.rows() > trainPart, true);
-        IntList testClasses = classes.slice(row -> 1.0 * row / features.rows() > trainPart);
+        List<Integer> testClasses = SliceUtils.slice(classes, row -> 1.0 * row / features.rows() > trainPart);
         List<Chip> trainZeroClass = new ArrayList<>();
         List<Chip> trainOneClass = new ArrayList<>();
         List<Chip> testZeroSuccess = new ArrayList<>();
@@ -219,6 +219,7 @@ public class Lab1 {
         plt.legend();
         plt.show();
     }
+    //*/
 
     public static void main(final String... args) throws Exception {
         Lab1 lab = new Lab1();

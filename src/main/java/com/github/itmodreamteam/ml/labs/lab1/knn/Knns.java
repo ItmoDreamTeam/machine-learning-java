@@ -1,10 +1,14 @@
 package com.github.itmodreamteam.ml.labs.lab1.knn;
 
 import com.github.itmodreamteam.ml.utils.collections.IntList;
+import com.github.itmodreamteam.ml.utils.collections.Lists;
 import com.github.itmodreamteam.ml.utils.matrixes.Matrix;
 import com.github.itmodreamteam.ml.classification.ClassifierFactory;
+import com.github.itmodreamteam.ml.utils.matrixes.Matrixes;
+import com.github.itmodreamteam.ml.utils.matrixes.Vector;
+import com.github.itmodreamteam.ml.validation.Samples;
 
-public class Knns implements ClassifierFactory {
+public class Knns implements ClassifierFactory<Vector, Integer> {
     private final int numberOfNeighbors;
     private final KnnClosestFunction meter;
     private final KnnImportanceFunction importanceFunction;
@@ -22,7 +26,9 @@ public class Knns implements ClassifierFactory {
     }
 
     @Override
-    public KnnClassifier build(Matrix trainFeatures, IntList trainClasses) {
+    public KnnClassifier build(Samples<Vector, Integer> samples) {
+        Matrix trainFeatures = Matrixes.joinRows(samples.getFeatures().toArray(new Vector[0]));
+        IntList trainClasses = Lists.of(samples.getAnswers());
         return new KnnClassifier(numberOfNeighbors, meter, importanceFunction, trainFeatures, trainClasses, numberOfClasses);
     }
 }
