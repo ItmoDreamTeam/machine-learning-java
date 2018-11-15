@@ -2,60 +2,65 @@ package com.github.itmodreamteam.ml.classification.bayes;
 
 import com.github.itmodreamteam.ml.classification.Classifier;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BinaryNaiveBayesClassifier<T> implements Classifier<List<T>, Boolean> {
+    private final double alpha;
     private final double threshold;
     private final double trueClassProbability;
     private final double falseClassProbability;
-    private final Map<T, Double> trueClassWordProbability;
-    private final Map<T, Double> falseClassWordProbability;
+    private final int numberOfTrueCases;
+    private final int numberOfFalseCases;
+    private final Map<T, Integer> numberOfContributionsToTrueClass;
+    private final Map<T, Integer> numberOfContributionsToFalseClass;
 
-    public BinaryNaiveBayesClassifier(List<List<T>> trainFeatures, List<Boolean> trainClasses, double threshold) {
+    public BinaryNaiveBayesClassifier(List<List<T>> trainFeatures, List<Boolean> trainClasses, double alpha, double threshold) {
+        this.alpha = alpha;
         this.threshold = threshold;
-        Map<T, Integer> numberOfContributionsToTrueClass = new HashMap<>();
-        Map<T, Integer> numberOfContributionsToFalseClass = new HashMap<>();
-        Map<T, Integer> numberOfContributionsToAllClasses = new HashMap<>();
+        numberOfContributionsToTrueClass = new HashMap<>();
+        numberOfContributionsToFalseClass = new HashMap<>();
+        int numberOfTrueCases = 0;
+        int numberOfFalseCases = 0;
         int numberOfSamples = trainFeatures.size();
         for (int sampleNumber = 0; sampleNumber < numberOfSamples; ++sampleNumber) {
+            boolean label = trainClasses.get(sampleNumber);
+            if (label) {
+                numberOfTrueCases++;
+            } else {
+                numberOfFalseCases++;
+            }
             for (T feature : trainFeatures.get(sampleNumber)) {
                 numberOfContributionsToTrueClass.putIfAbsent(feature, 0);
                 numberOfContributionsToFalseClass.putIfAbsent(feature, 0);
-                numberOfContributionsToAllClasses.putIfAbsent(feature, 0);
-                numberOfContributionsToAllClasses.merge(feature, 1, (i1, i2) -> i1 + i2);
-                if (trainClasses.get(sampleNumber)) {
+                if (label) {
                     numberOfContributionsToTrueClass.merge(feature, 1, (i1, i2) -> i1 + i2);
                 } else {
                     numberOfContributionsToFalseClass.merge(feature, 1, (i1, i2) -> i1 + i2);
                 }
             }
         }
-        trueClassWordProbability = new HashMap<>();
-        falseClassWordProbability = new HashMap<>();
-        for (T feature : numberOfContributionsToAllClasses.keySet()) {
-            double trueWeight = 1.0 * numberOfContributionsToTrueClass.get(feature) / numberOfContributionsToAllClasses.get(feature);
-            double falseWeight = 1.0 * numberOfContributionsToFalseClass.get(feature) / numberOfContributionsToAllClasses.get(feature);
-            trueClassWordProbability.put(feature, trueWeight);
-            falseClassWordProbability.put(feature, falseWeight);
-        }
-        int numberOfTrueClass = (int) trainClasses.stream()
-                .filter(b -> b)
-                .count();
-        int numberOfFalseClass = numberOfSamples - numberOfTrueClass;
-        trueClassProbability = 1.0 * numberOfTrueClass;
-        falseClassProbability = 1.0 * numberOfFalseClass;
+        this.numberOfFalseCases = numberOfFalseCases;
+        this.numberOfTrueCases = numberOfTrueCases;
+        trueClassProbability = 1.0 * numberOfTrueCases / numberOfSamples;
+        falseClassProbability = 1.0 * numberOfFalseCases / numberOfSamples;
     }
 
     @Override
     public Boolean classify(List<T> features) {
-        double totalTrueProbability = 0.0;
-        double totalFalseProbability = 0.0;
+        double likelihood = Math.log(trueClassProbability / falseClassProbability);
         for (T feature : features) {
-            totalTrueProbability += trueClassProbability * trueClassWordProbability.get(feature);
-            totalFalseProbability += falseClassProbability * falseClassWordProbability.get(feature);
+            likelihood += Math.log(probability(true, feature) / probability(false, feature));
         }
-        return totalTrueProbability / totalFalseProbability > threshold;
+        return likelihood > threshold;
+    }
+
+    private double probability(boolean label, T feature) {
+        Map<T, Integer> source = label ? numberOfContributionsToTrueClass : numberOfContributionsToFalseClass;
+        int numberOfCases = label ? numberOfTrueCases : numberOfFalseCases;
+        double contributions = 0.0;
+        if (source.containsKey(feature)) {
+            contributions = source.get(feature);
+        }
+        return (contributions + alpha) / (numberOfCases + alpha);
     }
 }
