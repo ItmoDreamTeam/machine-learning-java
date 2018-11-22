@@ -8,15 +8,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class ClassifierCrossValidator<F, A> {
     private static final Logger LOG = LoggerFactory.getLogger(ClassifierCrossValidator.class);
     private final ClassifierFactory<F, A> factory;
-    private final int numberOfClasses;
+    private final Set<A> classes;
 
-    public ClassifierCrossValidator(ClassifierFactory<F, A> factory, int numberOfClasses) {
+    public ClassifierCrossValidator(ClassifierFactory<F, A> factory, Set<A> classes) {
         this.factory = factory;
-        this.numberOfClasses = numberOfClasses;
+        this.classes = classes;
     }
 
     public Metric<A> validate(Samples<F, A> samples, int numberOfBatches) {
@@ -27,7 +28,7 @@ public class ClassifierCrossValidator<F, A> {
             Samples<F, A> train = samples.slice(row -> row / batchSize != testBatch);
             Samples<F, A> test = samples.slice(row -> row / batchSize == testBatch);
             Classifier<F, A> classifier = factory.build(train);
-            Metric.Builder<A> metricBuilder = Metric.builder(numberOfClasses);
+            Metric.Builder<A> metricBuilder = Metric.builder(classes);
 
             for (int sampleNumber = 0; sampleNumber < test.size(); ++sampleNumber) {
                 A classified = classifier.classify(test.getFeatures(sampleNumber));

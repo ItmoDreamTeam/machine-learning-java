@@ -13,6 +13,7 @@ public class BinaryNaiveBayesClassifier<T> implements Classifier<List<T>, Boolea
     private final int numberOfFalseCases;
     private final Map<T, Integer> numberOfContributionsToTrueClass;
     private final Map<T, Integer> numberOfContributionsToFalseClass;
+    private final int numberOfUniqueFeatures;
 
     public BinaryNaiveBayesClassifier(List<List<T>> trainFeatures, List<Boolean> trainClasses, double alpha, double threshold) {
         this.alpha = alpha;
@@ -22,14 +23,15 @@ public class BinaryNaiveBayesClassifier<T> implements Classifier<List<T>, Boolea
         int numberOfTrueCases = 0;
         int numberOfFalseCases = 0;
         int numberOfSamples = trainFeatures.size();
+        Set<T> features = new HashSet<>();
         for (int sampleNumber = 0; sampleNumber < numberOfSamples; ++sampleNumber) {
             boolean label = trainClasses.get(sampleNumber);
-            if (label) {
-                numberOfTrueCases++;
-            } else {
-                numberOfFalseCases++;
-            }
             for (T feature : trainFeatures.get(sampleNumber)) {
+                if (label) {
+                    numberOfTrueCases++;
+                } else {
+                    numberOfFalseCases++;
+                }
                 numberOfContributionsToTrueClass.putIfAbsent(feature, 0);
                 numberOfContributionsToFalseClass.putIfAbsent(feature, 0);
                 if (label) {
@@ -37,12 +39,14 @@ public class BinaryNaiveBayesClassifier<T> implements Classifier<List<T>, Boolea
                 } else {
                     numberOfContributionsToFalseClass.merge(feature, 1, (i1, i2) -> i1 + i2);
                 }
+                features.add(feature);
             }
         }
         this.numberOfFalseCases = numberOfFalseCases;
         this.numberOfTrueCases = numberOfTrueCases;
         trueClassProbability = 1.0 * numberOfTrueCases / numberOfSamples;
         falseClassProbability = 1.0 * numberOfFalseCases / numberOfSamples;
+        this.numberOfUniqueFeatures = features.size();
     }
 
     @Override
@@ -61,6 +65,6 @@ public class BinaryNaiveBayesClassifier<T> implements Classifier<List<T>, Boolea
         if (source.containsKey(feature)) {
             contributions = source.get(feature);
         }
-        return (contributions + alpha) / (numberOfCases + alpha);
+        return (contributions + alpha) / (numberOfCases + alpha * numberOfUniqueFeatures);
     }
 }

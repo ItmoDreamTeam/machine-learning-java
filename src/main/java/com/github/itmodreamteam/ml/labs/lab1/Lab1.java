@@ -67,7 +67,7 @@ public class Lab1 {
                         for (KnnImportanceFunction importanceFunction : KnnImportanceFunctions.values()) {
                             ClassifierCrossValidator<Vector, Integer> validator = new ClassifierCrossValidator<>(
                                     Knns.of(numberOfNeighbors, meter, importanceFunction, 2),
-                                    2
+                                    null
                             );
 
                             Metric<Integer> metric = validator.validate(Samples.of(transformedFeatures, classes), numberOfBatches);

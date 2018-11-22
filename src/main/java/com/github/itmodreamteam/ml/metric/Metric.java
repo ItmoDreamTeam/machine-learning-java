@@ -1,16 +1,13 @@
 package com.github.itmodreamteam.ml.metric;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Metric<A> {
     private final Stats[] stats;
     private final Map<A, Integer> index;
 
-    public static <A> Builder<A> builder(int numberOfClasses) {
-        return new Builder<>(numberOfClasses);
+    public static <A> Builder<A> builder(Set<A> answers) {
+        return new Builder<>(answers);
     }
 
     private Metric(Builder<A> builder) {
@@ -32,6 +29,9 @@ public class Metric<A> {
                     total += builder.stat[i][j];
                 }
             }
+//            System.out.println(classLabel + ": true positive: " + truePositive);
+//            System.out.println(classLabel + ": total labeled: " + totalLabeled);
+//            System.out.println(classLabel + ": total correct: " + totalCorrect);
             double precision = 1.0 * truePositive / totalPredicted;
             double recall = 1.0 * truePositive / totalLabeled;
             double accuracy = 1.0 * totalCorrect / total;
@@ -53,27 +53,27 @@ public class Metric<A> {
         this.index = index;
     }
 
-    public double precision(int label) {
-        return stats[label].precision;
+    public double precision(A label) {
+        return stats[index.get(label)].precision;
     }
 
-    public double recall(int label) {
-        return stats[label].recall;
+    public double recall(A label) {
+        return stats[index.get(label)].recall;
     }
 
-    public double f1measure(int label) {
+    public double f1measure(A label) {
         return fmeasure(label, 1);
     }
 
-    public double fmeasure(int label, double beta) {
-        Stats stats = this.stats[label];
+    public double fmeasure(A label, double beta) {
+        Stats stats = this.stats[index.get(label)];
         double precision = stats.precision;
         double recall = stats.recall;
         return (beta * beta + 1) * (precision * recall) / (beta * beta * precision + recall);
     }
 
-    public double accuracy(int label) {
-        return stats[label].accuracy;
+    public double accuracy(A label) {
+        return stats[index.get(label)].accuracy;
     }
 
     @Override
@@ -133,30 +133,31 @@ public class Metric<A> {
         private final int numberOfClasses;
         private final int[][] stat;
         private final Map<A, Integer> index = new HashMap<>();
-        private int currentIndex = 0;
 
-        public Builder(int numberOfClasses) {
-            this.numberOfClasses = numberOfClasses;
+        public Builder(Set<A> labels) {
+            this.numberOfClasses = labels.size();
+            int currentIndex = 0;
+            for (A label : labels) {
+                index.put(label, currentIndex);
+                currentIndex++;
+            }
             this.stat = new int[numberOfClasses][numberOfClasses];
         }
 
         public Builder with(A expected, A actual) {
-            int expectedIndex = updateIndex(expected);
-            int actualIndex = updateIndex(actual);
+            int expectedIndex = index.get(expected);
+            int actualIndex = index.get(actual);
             stat[actualIndex][expectedIndex]++;
             return this;
         }
 
-        private int updateIndex(A answer) {
-            if (!index.containsKey(answer)) {
-                index.put(answer, currentIndex);
-                currentIndex++;
-            }
-            return index.get(answer);
-        }
-
         public Metric<A> build() {
             return new Metric<>(this);
+        }
+
+        @Override
+        public String toString() {
+            return Arrays.deepToString(stat);
         }
     }
 }
